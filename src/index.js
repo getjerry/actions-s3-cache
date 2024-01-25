@@ -12,7 +12,7 @@ async function run() {
     const zipOption = core.getInput('zip-option', { required: false });
     const unzipOption = core.getInput('unzip-option', { required: false });
     const workingDirectory = core.getInput('working-directory', { required: false });
-    const cacheHitSkip = core.getInput('cache-hit-skip', { required: false });
+    const cacheHitSkip = JSON.parse(core.getInput('cache-hit-skip', { required: false }) || 'false');
     const fileName = cacheKey + '.zip';
 
     process.chdir(workingDirectory);
