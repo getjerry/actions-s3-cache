@@ -17,7 +17,7 @@ async function run() {
     const untarOption = core.getInput('untar-option', { required: false });
     const workingDirectory = core.getInput('working-directory', { required: false });
     const cacheHitSkip = JSON.parse(core.getInput('cache-hit-skip', { required: false }) || 'false');
-    const fileName = cacheKey + '.tar.gz';
+    const fileName = cacheKey + '.tar.zst';
     const filePath = path.join(workingDirectory, fileName);
 
     process.chdir(workingDirectory);
