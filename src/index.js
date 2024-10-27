@@ -56,7 +56,7 @@ async function run() {
         console.log(`Cache found, skipping command: ${command}`);
         return;
       }
-      await exec.exec(`tar ${untarOption} --use-compress-program=zstd -xzf ${fileName}`);
+      await exec.exec(`tar ${untarOption} --use-compress-program=zstd -xf ${fileName}`);
       await exec.exec(`rm -f ${fileName}`);
     });
   } catch (error) {
