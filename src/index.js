@@ -17,6 +17,11 @@ async function run() {
 
     process.chdir(workingDirectory);
 
+    core.saveState('s3-bucket', s3Bucket);
+    core.saveState('file-name', fileName);
+    core.saveState('tar-option', tarOption);
+    core.saveState('paths', paths);
+
     const s3 = new AWS.S3();
 
     s3.getObject(
@@ -29,22 +34,6 @@ async function run() {
           console.log(`No cache is found for key: ${fileName}`);
 
           await exec.exec(command); // install or build command e.g. npm ci, npm run dev
-          await exec.exec('bash', ['-c', `tar ${tarOption} -czf ${fileName} ${paths}`]);
-
-          s3.upload(
-            {
-              Body: fs.readFileSync(fileName),
-              Bucket: s3Bucket,
-              Key: fileName,
-            },
-            (err, data) => {
-              if (err) {
-                console.log(`Failed to store ${fileName}`);
-              } else {
-                console.log(`Stored cache to ${fileName}`);
-              }
-            },
-          );
         } else {
           console.log(`Found a cache for key: ${fileName}`);
           if (cacheHitSkip) {
