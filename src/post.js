@@ -11,10 +11,10 @@ async function run() {
     const fileName = core.getState('file-name');
     const tarOption = core.getState('tar-option');
     const paths = core.getState('paths');
-    const cacheHit = core.getState('cache-hit');
+    const cacheUpload = core.getState('cache-upload');
 
-    if(cacheHit) {
-      console.log(`File ${fileName} already exists in ${s3Bucket}. Skipping upload.`);
+    if (!cacheUpload) {
+      console.log(`Cache upload unset. Skipping upload.`);
       return;
     }
 

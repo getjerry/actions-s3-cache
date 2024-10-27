@@ -27,8 +27,6 @@ async function run() {
     core.saveState('tar-option', tarOption);
     core.saveState('paths', paths);
 
-    throw Error('Not implemented yet');
-
     const params = {
       Bucket: s3Bucket,
       Key: fileName,
@@ -41,18 +39,18 @@ async function run() {
     } catch (headErr) {
       console.log(`No cache is found for key: ${fileName}`);
       await exec.exec(command); // install or build command e.g. npm ci, npm run dev
+      core.saveState('cache-upload', true);
       return;
     }
 
     // Cache found. Download and extract
-    core.saveState('cache-hit', true);
     const fileStream = fs.createWriteStream(filePath);
     const s3Stream = downloader.download(params, {
       totalObjectSize: contentLength,
       concurrentStreams: 20,
     });
     s3Stream.pipe(fileStream);
-    s3Stream.on('downloaded', async ()=>{
+    s3Stream.on('downloaded', async () => {
       console.log(`Found a cache for key: ${fileName}`);
       if (cacheHitSkip) {
         console.log(`Cache found, skipping command: ${command}`);
@@ -60,7 +58,7 @@ async function run() {
       }
       await exec.exec(`tar ${untarOption} -xzf ${fileName}`);
       await exec.exec(`rm -f ${fileName}`);
-    })
+    });
   } catch (error) {
     core.setFailed(error.message);
   }
