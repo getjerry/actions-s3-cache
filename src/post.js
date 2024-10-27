@@ -16,6 +16,19 @@ async function run() {
 
     const fileStream = fs.createReadStream(fileName);
 
+    const headParams = {
+      Bucket: s3Bucket,
+      Key: fileName,
+    };
+
+    try {
+      await s3.headObject(headParams).promise();
+      console.log(`File ${fileName} already exists in ${s3Bucket}. Skipping upload.`);
+      return;
+    } catch (headErr) {
+      console.log(`File ${fileName} does not exist in ${s3Bucket}. Proceeding with upload.`);
+    }
+
     s3.upload(
       {
         Body: fileStream,
