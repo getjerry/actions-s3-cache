@@ -47,7 +47,7 @@ async function run() {
     const fileStream = fs.createWriteStream(filePath);
     const s3Stream = downloader.download(params, {
       totalObjectSize: contentLength,
-      concurrentStreams: 10,
+      concurrentStreams: 20,
     });
     s3Stream.pipe(fileStream);
     s3Stream.on('downloaded', async ()=>{
