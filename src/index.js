@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const AWS = require('aws-sdk');
 const fs = require('graceful-fs');
+const path = require('path');
 
 async function run() {
   try {
@@ -14,6 +15,7 @@ async function run() {
     const workingDirectory = core.getInput('working-directory', { required: false });
     const cacheHitSkip = JSON.parse(core.getInput('cache-hit-skip', { required: false }) || 'false');
     const fileName = cacheKey + '.tar.gz';
+    const filePath = path.join(workingDirectory, fileName);
 
     process.chdir(workingDirectory);
 
@@ -24,29 +26,30 @@ async function run() {
 
     const s3 = new AWS.S3();
 
-    s3.getObject(
-      {
-        Bucket: s3Bucket,
-        Key: fileName,
-      },
-      async (err, data) => {
-        if (err) {
-          console.log(`No cache is found for key: ${fileName}`);
+    const params = {
+      Bucket: s3Bucket,
+      Key: fileName,
+    };
 
-          await exec.exec(command); // install or build command e.g. npm ci, npm run dev
-        } else {
-          console.log(`Found a cache for key: ${fileName}`);
-          if (cacheHitSkip) {
-            console.log(`Cache found, skipping command: ${command}`);
-            return;
-          }
-          fs.writeFileSync(fileName, data.Body);
+    const fileStream = fs.createWriteStream(filePath);
+    const s3Stream = s3.getObject(params).createReadStream();
 
-          await exec.exec(`tar ${untarOption} -xzf ${fileName}`);
-          void exec.exec(`rm -f ${fileName}`);
-        }
-      },
-    );
+    s3Stream.on('error', async (err) => {
+      console.log(`No cache is found for key: ${fileName}`);
+      await exec.exec(command); // install or build command e.g. npm ci, npm run dev
+    });
+
+    fileStream.on('close', async () => {
+      console.log(`Found a cache for key: ${fileName}`);
+      if (cacheHitSkip) {
+        console.log(`Cache found, skipping command: ${command}`);
+        return;
+      }
+      await exec.exec(`tar ${untarOption} -xzf ${fileName}`);
+      await exec.exec(`rm -f ${fileName}`);
+    });
+
+    s3Stream.pipe(fileStream);
   } catch (error) {
     core.setFailed(error.message);
   }

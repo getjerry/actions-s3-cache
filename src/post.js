@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const AWS = require('aws-sdk');
 const fs = require('graceful-fs');
+const exec = require('@actions/exec');
 
 async function run() {
   try {
@@ -13,11 +14,15 @@ async function run() {
 
     await exec.exec('bash', ['-c', `tar ${tarOption} -czf ${fileName} ${paths}`]);
 
+    const fileStream = fs.createReadStream(fileName);
+
     s3.upload(
       {
-        Body: fs.readFileSync(fileName),
+        Body: fileStream,
         Bucket: s3Bucket,
         Key: fileName,
+        PartSize: 10 * 1024 * 1024, // 10 MB
+        QueueSize: 10, // 10 concurrent uploads
       },
       (err, data) => {
         if (err) {
