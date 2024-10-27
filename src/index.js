@@ -43,6 +43,7 @@ async function run() {
     }
 
     // Cache found. Download and extract
+    core.saveState('cache-hit', true);
     const fileStream = fs.createWriteStream(filePath);
     const s3Stream = downloader.download(params, {
       totalObjectSize: contentLength,
