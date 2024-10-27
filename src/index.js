@@ -27,6 +27,8 @@ async function run() {
     core.saveState('tar-option', tarOption);
     core.saveState('paths', paths);
 
+    throw Error('Not implemented yet');
+
     const params = {
       Bucket: s3Bucket,
       Key: fileName,
