@@ -10,12 +10,12 @@ inputs:
     required: true
   command:
     required: true
-  zip-option:
+  tar-option:
     required: false
-    default: -ryq
-  unzip-option:
+    default: --use-compress-program=zstd -cf
+  untar-option:
     required: false
-    default: -n
+    default: --use-compress-program=unzstd -xf
   working-directory:
     required: false
     default: ./

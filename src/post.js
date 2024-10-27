@@ -18,7 +18,7 @@ async function run() {
       return;
     }
 
-    await exec.exec('bash', ['-c', `tar ${tarOption} --use-compress-program=zstd -cf ${fileName} ${paths}`]);
+    await exec.exec('bash', ['-c', `tar ${tarOption} ${fileName} ${paths}`]);
 
     const fileStream = fs.createReadStream(fileName);
 
