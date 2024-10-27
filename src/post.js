@@ -5,10 +5,11 @@ const exec = require('@actions/exec');
 
 async function run() {
   try {
-    const s3Bucket = core.getState('s3-bucket');
-    const fileName = core.getState('file-name');
-    const tarOption = core.getState('tar-option');
-    const paths = core.getState('paths');
+    const s3Bucket = core.getInput('s3-bucket', { required: true });
+    const cacheKey = core.getInput('cache-key', { required: true });
+    const paths = core.getInput('paths', { required: true });
+    const tarOption = core.getInput('tar-option', { required: false });
+    const fileName = cacheKey + '.tar.gz';
 
     const s3 = new AWS.S3();
 

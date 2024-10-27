@@ -17,11 +17,6 @@ async function run() {
 
     process.chdir(workingDirectory);
 
-    core.saveState('s3-bucket', s3Bucket);
-    core.saveState('file-name', fileName);
-    core.saveState('tar-option', tarOption);
-    core.saveState('paths', paths);
-
     const s3 = new AWS.S3();
 
     s3.getObject(
