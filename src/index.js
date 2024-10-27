@@ -9,11 +9,11 @@ async function run() {
     const cacheKey = core.getInput('cache-key', { required: true });
     const paths = core.getInput('paths', { required: true });
     const command = core.getInput('command', { required: true });
-    const zipOption = core.getInput('zip-option', { required: false });
-    const unzipOption = core.getInput('unzip-option', { required: false });
+    const tarOption = core.getInput('tar-option', { required: false });
+    const untarOption = core.getInput('untar-option', { required: false });
     const workingDirectory = core.getInput('working-directory', { required: false });
     const cacheHitSkip = JSON.parse(core.getInput('cache-hit-skip', { required: false }) || 'false');
-    const fileName = cacheKey + '.zip';
+    const fileName = cacheKey + '.tar.gz';
 
     process.chdir(workingDirectory);
 
@@ -29,7 +29,7 @@ async function run() {
           console.log(`No cache is found for key: ${fileName}`);
 
           await exec.exec(command); // install or build command e.g. npm ci, npm run dev
-          await exec.exec('bash', ['-c', `zip ${zipOption} ${fileName} ${paths}`]);
+          await exec.exec('bash', ['-c', `tar ${tarOption} -czf ${fileName} ${paths}`]);
 
           s3.upload(
             {
@@ -39,7 +39,7 @@ async function run() {
             },
             (err, data) => {
               if (err) {
-                console.log(`Failed store to ${fileName}`);
+                console.log(`Failed to store ${fileName}`);
               } else {
                 console.log(`Stored cache to ${fileName}`);
               }
@@ -53,8 +53,8 @@ async function run() {
           }
           fs.writeFileSync(fileName, data.Body);
 
-          await exec.exec(`unzip ${unzipOption} ${fileName}`);
-          await exec.exec(`rm -f ${fileName}`);
+          await exec.exec(`tar ${untarOption} -xzf ${fileName}`);
+          void exec.exec(`rm -f ${fileName}`);
         }
       },
     );
