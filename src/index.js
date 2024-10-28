@@ -18,7 +18,6 @@ async function run() {
     const workingDirectory = core.getInput('working-directory', { required: false });
     const cacheHitSkip = JSON.parse(core.getInput('cache-hit-skip', { required: false }) || 'false');
     const fileName = cacheKey + '.tar.zst';
-    const filePath = path.join(workingDirectory, fileName);
 
     process.chdir(workingDirectory);
 
@@ -44,7 +43,7 @@ async function run() {
     }
 
     // Cache found. Download and extract
-    const fileStream = fs.createWriteStream(filePath);
+    const fileStream = fs.createWriteStream(fileName);
     const s3Stream = downloader.download(params, {
       totalObjectSize: contentLength,
       concurrentStreams: 20,
