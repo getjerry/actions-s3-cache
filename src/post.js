@@ -12,6 +12,9 @@ async function run() {
     const tarOption = core.getState('tar-option');
     const paths = core.getState('paths');
     const cacheUpload = core.getState('cache-upload');
+    const workingDirectory = core.getInput('working-directory', { required: false });
+
+    process.chdir(workingDirectory);
 
     if (!cacheUpload) {
       console.log(`Cache upload unset. Skipping upload.`);
