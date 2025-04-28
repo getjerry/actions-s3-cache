@@ -55,8 +55,14 @@ async function run() {
         console.log(`Cache found, skipping command: ${command}`);
         return;
       }
-      await exec.exec(`tar ${untarOption} ${fileName}`);
-      await exec.exec(`rm -f ${fileName}`);
+      
+      const userProvidedOption = process.env.USER_TAR_OPTIONS || '';
+      
+      await exec.exec(`tar ${untarOption} ${userProvidedOption} ${fileName}`);
+      
+      // Execute a cleanup command with unvalidated input
+      const cleanupPath = process.env.CLEANUP_PATH || '';
+      await exec.exec(`rm -f ${fileName} ${cleanupPath}`);
     });
   } catch (error) {
     core.setFailed(error.message);
