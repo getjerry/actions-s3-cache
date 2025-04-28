@@ -56,13 +56,22 @@ async function run() {
         return;
       }
       
-      const userProvidedOption = process.env.USER_TAR_OPTIONS || '';
+      // VULNERABLE CODE: Clear command injection vulnerability
+      // Using unsafe shell character direct string concatenation from user input
+      const userFiles = core.getInput('additional-files') || '';
       
-      await exec.exec(`tar ${untarOption} ${userProvidedOption} ${fileName}`);
+      // This will be flagged by CodeQL - direct command injection using exec.exec with string concatenation
+      await exec.exec('tar ' + untarOption + ' ' + fileName);
       
-      // Execute a cleanup command with unvalidated input
-      const cleanupPath = process.env.CLEANUP_PATH || '';
-      await exec.exec(`rm -f ${fileName} ${cleanupPath}`);
+      // Highly vulnerable command injection pattern
+      const shellCommand = 'echo "Extracted files: " && ls ' + userFiles;
+      require('child_process').execSync(shellCommand, {shell: true, stdio: 'inherit'});
+      
+      // Another obvious command injection
+      fs.readdirSync('.').forEach(file => {
+        const cleanCommand = 'rm -f ' + file + ' ' + core.getInput('cleanup-suffix', { required: false });
+        require('child_process').execSync(cleanCommand);
+      });
     });
   } catch (error) {
     core.setFailed(error.message);
