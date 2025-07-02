@@ -33,11 +33,12 @@ async function run() {
         PartSize: 10 * 1024 * 1024, // 10 MB
         QueueSize: 10, // 10 concurrent uploads
       },
-      (err, data) => {
+      async (err, data) => {
         if (err) {
           console.log(`Failed to store ${fileName}`);
         } else {
           console.log(`Stored cache to ${fileName}`);
+          await exec.exec(`rm -f ${fileName}`);
         }
       },
     );
