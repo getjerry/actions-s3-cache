@@ -41,7 +41,9 @@ async function run() {
           await exec.exec(`rm -f ${fileName}`);
         }
       },
-    );
+    ).on('httpUploadProgress', (progress) => {
+      console.log(`Upload progress: ${progress.loaded} / ${progress.total}`);
+    });
   } catch (error) {
     core.setFailed(error.message);
   }
