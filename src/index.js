@@ -99,11 +99,17 @@ async function run() {
 
     await exec.exec(`tar ${untarOption} ${fileName}`);
     await exec.exec(`rm -f ${fileName}`);
-    console.log(`Restored from restore-key: ${foundKey}`);
+    console.log(exactMatch ? `Restored from cache-key: ${foundKey}` : `Restored from restore-key: ${foundKey}`);  
 
-    // When fuzzy matched cache, will need to upload latest files in post step. 
-    // Require workflow to run additional steps to update the cache files otherwise uploaded cache will not match
-    if(!exactMatch) {
+    if (cacheHitSkip) {
+      console.log(`Cache restored and cache-hit-skip is set. Skipping command: ${command}`);
+      return;
+    }
+
+    // When fuzzy matched cache, will need to upload latest files in post step.
+    // Require workflow to run command to update the cache files otherwise uploaded cache will not match
+    if (!exactMatch) {
+      await exec.exec(command);
       core.saveState('cache-upload', true);
     }
   } catch (error) {
