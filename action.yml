@@ -6,6 +6,8 @@ inputs:
     required: true
   cache-key:
     required: true
+  restore-keys:
+    required: false
   paths:
     required: true
   command:
