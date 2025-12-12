@@ -6,16 +6,18 @@ inputs:
     required: true
   cache-key:
     required: true
+  restore-keys:
+    required: false
   paths:
     required: true
   command:
     required: true
   tar-option:
     required: false
-    default: --use-compress-program=zstd -cf
+    default: -P --use-compress-program=zstd -cf
   untar-option:
     required: false
-    default: --use-compress-program=unzstd -xf
+    default: -P --use-compress-program=unzstd -xf
   working-directory:
     required: false
     default: ./
