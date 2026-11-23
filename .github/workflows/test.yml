@@ -5,15 +5,23 @@ on:
       - master
 
 env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_DEFAULT_REGION: ap-northeast-1
 
 jobs:
   test_cache_miss_and_upload:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v2
+      # pull_request: subject pull_request on gha-pr; push to master: ref:refs/heads/master on
+      # gha-nonprod (a test cache object, nothing prod).
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ github.event_name == 'pull_request' && 'arn:aws:iam::919341117301:role/gha-pr' || 'arn:aws:iam::919341117301:role/gha-nonprod' }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
       - run: npm ci
       - name: set up php 7.3
         uses: shivammathur/setup-php@v2
@@ -36,8 +44,18 @@ jobs:
   test_cache_hit:
     needs: [test_cache_miss_and_upload]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v2
+      # pull_request: subject pull_request on gha-pr; push to master: ref:refs/heads/master on
+      # gha-nonprod (a test cache object, nothing prod).
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ github.event_name == 'pull_request' && 'arn:aws:iam::919341117301:role/gha-pr' || 'arn:aws:iam::919341117301:role/gha-nonprod' }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
       - run: npm ci
       - name: set up php 7.3
         uses: shivammathur/setup-php@v2

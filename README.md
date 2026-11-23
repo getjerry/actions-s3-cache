@@ -7,11 +7,16 @@ This action installs dependencies or builds, and caches them in S3.
 ```yaml
 steps:
   - uses: actions/checkout@v2
-  - uses: shonansurvivors/actions-s3-cache@v1.0.1
+  # Credentials come from the environment (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and
+  # AWS_SESSION_TOKEN). In getjerry repos, assume a gha-* role through GitHub OIDC first
+  # (the job needs `permissions: id-token: write`).
+  - uses: aws-actions/configure-aws-credentials@v6
+    with:
+      role-to-assume: arn:aws:iam::919341117301:role/gha-pr # gha-pr on pull_request, gha-nonprod / gha-prod elsewhere
+      aws-region: us-west-2
+  - uses: getjerry/actions-s3-cache@master
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: us-east-1
+      AWS_DEFAULT_REGION: us-west-2
     with:
       s3-bucket: your-s3-bucket-name # required
       cache-key: npm-v1-${{ hashFiles('laravel/package-lock.json') }} # required ('.zip' is unnecessary)
